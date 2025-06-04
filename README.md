@@ -1,5 +1,13 @@
 # 👑 Crown Club Strategy Indicator 👑
 
+## 📥 Download the Indicator
+
+Click the button below to download the indicator files in a ZIP:
+
+[![Download](https://img.shields.io/badge/Download-ZIP-blue?style=for-the-badge&logo=github)](https://github.com/GigantePT/crown-club-strategy-indicator/archive/refs/heads/main.zip)
+
+---
+
 This is the unofficial indicator used by the **Crown Club** community on TradingView.  
 It automatically draws:
 - 2 SMAs (50 SMA and 200 SMA by default, but you can change in the settings)
