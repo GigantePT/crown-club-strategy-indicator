@@ -30,7 +30,7 @@ It works on multiple timeframes.
 
 1. Open [TradingView](https://tradingview.com) and go to any chart
 2. Click on the **Pine Editor** (at the bottom)
-3. Delete any default code, then paste the contents of `CrownClubIndicator.pine`
+3. Delete any default code, then paste the contents of `CrownClubStrategyIndicator.pine`
 4. Click the **Add to Chart** button (or `Ctrl + Enter`)
 5. Click the **Save** icon and give it a name.
 6. You're all set!
