@@ -15,6 +15,7 @@ It automatically draws:
 - Last Week's Fibonacci Levels (0.500, 0.618 and 1.618) and the Golden Zone, based on the bias you set in the settings (Long or Short)
 - Yesterday's High and Low
 - Yesterday's Fibonacci Levels (0.500, 0.618 and 1.618) and the Golden Zone, based on the bias you set in the settings (Long or Short)
+- Day and Week separator (only for timeframes lower than "Daily")
 
 (On Mondays it does not draw Yesterday's High and Low and Fibonacci Levels)
 

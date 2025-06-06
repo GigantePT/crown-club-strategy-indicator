@@ -13,20 +13,20 @@ indicator("👑 Crown Club Strategy 👑", overlay = true)
 /////////////////////////////////////////////////////////////////////
 
 // SMAs
-sma1Length = input(50, "SMA 1 Length", "Length of the first SMA", group="SMA", display = display.data_window)
-sma1Color = input(color.aqua, "SMA 1 Color", "Color of the first SMA line", group="SMA")
-sma2Length = input(200, "SMA 2 Length", "Length of the second SMA", group="SMA", display = display.data_window)
-sma2Color = input(color.purple, "SMA 2 Color", "Color of the second SMA line", group="SMA")
+sma1Length = input(50, "SMA 1:", group="SMA", inline = "sma1", display = display.data_window)
+sma1Color = input(color.aqua, " | ", "Length and color of the first SMA", inline = "sma1", group="SMA")
+sma2Length = input(200, "SMA 2:", group="SMA", inline = "sma2", display = display.data_window)
+sma2Color = input(color.purple, " | ", "Length and color of the second SMA", inline = "sma2", group="SMA")
 
 // Last Week High/Low
-lastWeekHighLowColor = input(color.rgb(91, 156, 246), "Last Week's High/Low Color", "Color of the Last Week's High and Low horizontal lines", group="Last Week's High/Low")
-lastWeekFibLevelsColor = input(color.rgb(24, 72, 204), "Last Week's Fibonacci Levels Color", "Color of the Last Week's Fibonacci Levels", group="Last Week's High/Low")
-lastWeekManualBias = input.string(title="Last Week's Bias", defval = "Long 📈", options = ["Long 📈", "Short 📉"], tooltip = "Manually set the bias for the Last Week", group="Last Week's High/Low", display = display.data_window)
+lastWeekHighLowColor = input(color.rgb(91, 156, 246), "Colors:", inline = "lastWeekColors", group="Last Week")
+lastWeekFibLevelsColor = input(color.rgb(24, 72, 204), " | ", "Color of Last Week's:\n- High/Low\n- Fibonacci Levels/Golden Zone", inline = "lastWeekColors", group="Last Week")
+lastWeekManualBias = input.string(title="Bias:", defval = "Long 📈", options = ["Long 📈", "Short 📉"], tooltip = "Manually set the bias for Last Week", inline = "lastWeekBias", group="Last Week", display = display.data_window)
 
 // Yesterday High/Low
-yesterdayHighLowColor = input(color.yellow, "Yesterday's High/Low Color", "Color of Yesterday's High and Low horizontal lines", group="Yesterday's High/Low")
-yesterdayFibLevelsColor = input(color.orange, "Yesterday's Fibonacci Levels Color", "Color of Yesterday's Fibonacci Levels", group="Yesterday's High/Low")
-yesterdayManualBias = input.string(title="Yesterday's Bias", defval = "Long 📈", options = ["Long 📈", "Short 📉"], tooltip = "Manually set the bias for Yesterday", group="Yesterday's High/Low", display = display.data_window)
+yesterdayHighLowColor = input(color.yellow, "Colors:", inline = "yesterdayColors", group="Yesterday")
+yesterdayFibLevelsColor = input(color.orange, " | ", "Color of Yesterday's:\n- High/Low\n- Fibonacci Levels/Golden Zone", inline = "yesterdayColors", group="Yesterday")
+yesterdayManualBias = input.string(title="Bias:", defval = "Long 📈", options = ["Long 📈", "Short 📉"], tooltip = "Manually set the bias for Yesterday", inline = "yesterdayBias", group="Yesterday", display = display.data_window)
 
 // Labels
 showLabels = input.bool(true, "Show Labels", "Show all labels", group=" Labels")
@@ -77,7 +77,7 @@ drawLastWeekHighLow() =>
         lowLine := line.new(x1=startOfLastWeek, y1=prevWeekLow, x2=x2Time, y2=prevWeekLow, xloc=xloc.bar_time, extend=extend.none, color=lastWeekHighLowColor, width=2)
 
         // Add label x coordinate at the center of yesterday
-        xLabel = (startOfLastWeek + startOfThisWeek) / 2
+        xLabel = startOfThisWeek
 
         // Show labels (if enabled)
         if showLabels
@@ -109,17 +109,17 @@ drawLastWeekFibLevels(lastWeekBias) =>
     deltaHighLow = prevWeekHigh - prevWeekLow
 
     // FibLevels
-    float lastWeek05 = na
+    float lastWeek0500 = na
     float lastWeek0618 = na
     float lastWeek1618 = na
 
     // Set the Fib Levels based on the bias
     if lastWeekBias == "Long"
-        lastWeek05 := prevWeekLow + (deltaHighLow * 0.5)
+        lastWeek0500 := prevWeekLow + (deltaHighLow * 0.5)
         lastWeek0618 := prevWeekLow + (deltaHighLow * 0.618)
         lastWeek1618 := prevWeekLow + (deltaHighLow * 1.618)
     else
-        lastWeek05 := prevWeekHigh - (deltaHighLow * 0.5)
+        lastWeek0500 := prevWeekHigh - (deltaHighLow * 0.5)
         lastWeek0618 := prevWeekHigh - (deltaHighLow * 0.618)
         lastWeek1618 := prevWeekHigh - (deltaHighLow * 1.618)
 
@@ -127,10 +127,10 @@ drawLastWeekFibLevels(lastWeekBias) =>
     isFirstBarOfWeek = ta.change(startOfThisWeek) != 0
 
     // Persistent lines and labels
-    var line lastWeek05Line = na
+    var line lastWeek0500Line = na
     var line lastWeek0618Line = na
     var line lastWeek1618Line = na
-    var label lastWeek05Label = na
+    var label lastWeek0500Label = na
     var label lastWeek0618Label = na
     var label lastWeek1618Label = na
     var box lastWeekGZ = na
@@ -144,33 +144,33 @@ drawLastWeekFibLevels(lastWeekBias) =>
 
     if isFirstBarOfWeek and not na(lastWeekStartBarIndex)
         // Delete old lines
-        line.delete(lastWeek05Line)
+        line.delete(lastWeek0500Line)
         line.delete(lastWeek0618Line)
         line.delete(lastWeek1618Line)
-        label.delete(lastWeek05Label)
+        label.delete(lastWeek0500Label)
         label.delete(lastWeek0618Label)
         label.delete(lastWeek1618Label)
         box.delete(lastWeekGZ)
 
         // Create new horizontal rays (extend to the right)
-        lastWeek05Line := line.new(x1=startOfLastWeek, y1=lastWeek05, x2=x2Time, y2=lastWeek05, xloc=xloc.bar_time, extend=extend.none, color=lastWeekFibLevelsColor, width=2)
+        lastWeek0500Line := line.new(x1=startOfLastWeek, y1=lastWeek0500, x2=x2Time, y2=lastWeek0500, xloc=xloc.bar_time, extend=extend.none, color=lastWeekFibLevelsColor, width=2)
         lastWeek0618Line := line.new(x1=startOfLastWeek, y1=lastWeek0618, x2=x2Time, y2=lastWeek0618, xloc=xloc.bar_time, extend=extend.none, color=lastWeekFibLevelsColor, width=2)
         lastWeek1618Line := line.new(x1=startOfLastWeek, y1=lastWeek1618, x2=x2Time, y2=lastWeek1618, xloc=xloc.bar_time, extend=extend.none, color=lastWeekFibLevelsColor, width=2)
 
         // Add label x coordinate at the center of yesterday
-        xLabel = (startOfLastWeek + startOfThisWeek) / 2
+        xLabel = startOfThisWeek
         
         // Show labels (if enabled)
         if showLabels
-            lastWeek05Label := label.new(x=xLabel, y=lastWeek05, text="LAST WEEK 0.5 (" + str.tostring(lastWeek05, format.mintick) + ")", xloc=xloc.bar_time, style=label.style_none, textcolor=lastWeekFibLevelsColor, size=size.normal)
+            lastWeek0500Label := label.new(x=xLabel, y=lastWeek0500, text="LAST WEEK 0.500 (" + str.tostring(lastWeek0500, format.mintick) + ")", xloc=xloc.bar_time, style=label.style_none, textcolor=lastWeekFibLevelsColor, size=size.normal)
             lastWeek0618Label := label.new(x=xLabel, y=lastWeek0618, text="LAST WEEK 0.618 (" + str.tostring(lastWeek0618, format.mintick) + ")", xloc=xloc.bar_time, style=label.style_none, textcolor=lastWeekFibLevelsColor, size=size.normal)
             lastWeek1618Label := label.new(x=xLabel, y=lastWeek1618, text="LAST WEEK 1.618 (" + str.tostring(lastWeek1618, format.mintick) + ")", xloc=xloc.bar_time, style=label.style_none, textcolor=lastWeekFibLevelsColor, size=size.normal)
         
         // Draw Golden Zone
         if lastWeekBias == "Long"
-            lastWeekGZ := box.new(left=startOfLastWeek, right=x2Time, top=lastWeek0618, bottom=lastWeek05, border_color=lastWeekFibLevelsColor, bgcolor=color.new(lastWeekFibLevelsColor, 75), xloc=xloc.bar_time, text=showLabels ? "💰 LAST WEEK GZ" : "", text_size=size.large, text_color=lastWeekFibLevelsColor, text_formatting = text.format_bold)
+            lastWeekGZ := box.new(left=startOfLastWeek, right=x2Time, top=lastWeek0618, bottom=lastWeek0500, border_color=lastWeekFibLevelsColor, bgcolor=color.new(lastWeekFibLevelsColor, 75), xloc=xloc.bar_time, text=showLabels ? "💰 LAST WEEK'S GZ" : na, text_size=size.large, text_color=lastWeekFibLevelsColor, text_formatting = text.format_bold)
         else
-            lastWeekGZ := box.new(left=startOfLastWeek, right=x2Time, top=lastWeek05, bottom=lastWeek0618, border_color=lastWeekFibLevelsColor, bgcolor=color.new(lastWeekFibLevelsColor, 75), xloc=xloc.bar_time, text=showLabels ? "💰 LAST WEEK GZ" : "", text_size=size.large, text_color=lastWeekFibLevelsColor, text_formatting = text.format_bold)
+            lastWeekGZ := box.new(left=startOfLastWeek, right=x2Time, top=lastWeek0500, bottom=lastWeek0618, border_color=lastWeekFibLevelsColor, bgcolor=color.new(lastWeekFibLevelsColor, 75), xloc=xloc.bar_time, text=showLabels ? "💰 LAST WEEK'S GZ" : na, text_size=size.large, text_color=lastWeekFibLevelsColor, text_formatting = text.format_bold)
 
 
 
@@ -181,13 +181,13 @@ drawYesterdayHighLow() =>
     yesterdayLow  = request.security(syminfo.tickerid, "D", low[1], lookahead=barmerge.lookahead_on)
 
     // Get the time (in milliseconds) of the start of today and the start of yesterday
-    //startOfToday = time("D")  // milliseconds since epoch                             DELETE
-    //startOfYesterday = startOfToday - 1 * 24 * 60 * 60 * 1000  // subtract 1 day      DELETE
+    startOfToday = time("D")  // milliseconds since epoch
+    startOfYesterday = startOfToday - 1 * 24 * 60 * 60 * 1000  // subtract 1 day
 
-    startOfToday = timestamp("UTC", year, month, dayofmonth)
-    startOfYesterday = startOfToday - 86400000
+    //startOfToday = timestamp("UTC", year, month, dayofmonth)      DELETE
+    //startOfYesterday = startOfToday - 86400000                    DELETE
 
-    x2Time = startOfToday + 5 * 24 * 60 * 60 * 1000  // extend 5 days to future
+    x2Time = startOfToday + (7 - dayofweek) * 24 * 60 * 60 * 1000  // extend until the end of the week
 
     // Only draw on first bar of the current day (to avoid multiple lines)
     isFirstBarOfDay = ta.change(startOfToday) != 0
@@ -244,29 +244,29 @@ drawYesterdayFibLevels(yesterdayBias) =>
     yesterdayLow  = request.security(syminfo.tickerid, "D", low[1], lookahead=barmerge.lookahead_on)
 
     // Get the time (in milliseconds) of the start of today and the start of yesterday
-    //startOfToday = time("D")  // milliseconds since epoch                                 DELETE
-    //startOfYesterday = startOfToday - 1 * 24 * 60 * 60 * 1000  // subtract 1 day          DELETE
+    startOfToday = time("D")  // milliseconds since epoch
+    startOfYesterday = startOfToday - 1 * 24 * 60 * 60 * 1000  // subtract 1 day
 
-    startOfToday = timestamp("UTC", year, month, dayofmonth)
-    startOfYesterday = startOfToday - 86400000
+    //startOfToday = timestamp("UTC", year, month, dayofmonth)      DELETE
+    //startOfYesterday = startOfToday - 86400000                    DELETE
 
-    x2Time = startOfToday + 5 * 24 * 60 * 60 * 1000  // extend 5 days to future
+    x2Time = startOfToday + (7 - dayofweek) * 24 * 60 * 60 * 1000  // extend until the end of the week
 
     // Difference between Yesterday's High and Low price
     deltaHighLow = yesterdayHigh - yesterdayLow
 
     // FibLevels
-    float yesterday05 = na
+    float yesterday0500 = na
     float yesterday0618 = na
     float yesterday1618 = na
 
     // Set the Fib Levels based on the bias
     if yesterdayBias == "Long"
-        yesterday05 := yesterdayLow + (deltaHighLow * 0.5)
+        yesterday0500 := yesterdayLow + (deltaHighLow * 0.5)
         yesterday0618 := yesterdayLow + (deltaHighLow * 0.618)
         yesterday1618 := yesterdayLow + (deltaHighLow * 1.618)
     else
-        yesterday05 := yesterdayHigh - (deltaHighLow * 0.5)
+        yesterday0500 := yesterdayHigh - (deltaHighLow * 0.5)
         yesterday0618 := yesterdayHigh - (deltaHighLow * 0.618)
         yesterday1618 := yesterdayHigh - (deltaHighLow * 1.618)
 
@@ -274,10 +274,10 @@ drawYesterdayFibLevels(yesterdayBias) =>
     isFirstBarOfDay = ta.change(startOfToday) != 0
 
     // Persistent lines and labels
-    var line yesterday05Line = na
+    var line yesterday0500Line = na
     var line yesterday0618Line = na
     var line yesterday1618Line = na
-    var label yesterday05Label = na
+    var label yesterday0500Label = na
     var label yesterday0618Label = na
     var label yesterday1618Label = na
     var box yesterdayGZ = na
@@ -291,10 +291,10 @@ drawYesterdayFibLevels(yesterdayBias) =>
 
     if isFirstBarOfDay and not na(yesterdayStartBarIndex)
         // Delete old lines
-        line.delete(yesterday05Line)
+        line.delete(yesterday0500Line)
         line.delete(yesterday0618Line)
         line.delete(yesterday1618Line)
-        label.delete(yesterday05Label)
+        label.delete(yesterday0500Label)
         label.delete(yesterday0618Label)
         label.delete(yesterday1618Label)
         box.delete(yesterdayGZ)
@@ -302,7 +302,7 @@ drawYesterdayFibLevels(yesterdayBias) =>
         // Will only draw on Tuesday, Wednesday, Thursday and Friday
         if dayofweek == dayofweek.tuesday or dayofweek == dayofweek.wednesday or dayofweek == dayofweek.thursday or dayofweek == dayofweek.friday
             // Create new horizontal rays (extend to the right)
-            yesterday05Line := line.new(x1=startOfYesterday, y1=yesterday05, x2=x2Time, y2=yesterday05, xloc=xloc.bar_time, extend=extend.none, color=yesterdayFibLevelsColor, width=2)
+            yesterday0500Line := line.new(x1=startOfYesterday, y1=yesterday0500, x2=x2Time, y2=yesterday0500, xloc=xloc.bar_time, extend=extend.none, color=yesterdayFibLevelsColor, width=2)
             yesterday0618Line := line.new(x1=startOfYesterday, y1=yesterday0618, x2=x2Time, y2=yesterday0618, xloc=xloc.bar_time, extend=extend.none, color=yesterdayFibLevelsColor, width=2)
             yesterday1618Line := line.new(x1=startOfYesterday, y1=yesterday1618, x2=x2Time, y2=yesterday1618, xloc=xloc.bar_time, extend=extend.none, color=yesterdayFibLevelsColor, width=2)
 
@@ -311,18 +311,17 @@ drawYesterdayFibLevels(yesterdayBias) =>
 
             // Show labels (if enabled)
             if showLabels
-                yesterday05Label := label.new(x=xLabel, y=yesterday05, text="YESTERDAY 0.500 (" + str.tostring(yesterday05, format.mintick) + ")", xloc=xloc.bar_time, style=label.style_none, textcolor=yesterdayFibLevelsColor, size=size.normal)
+                yesterday0500Label := label.new(x=xLabel, y=yesterday0500, text="YESTERDAY 0.500 (" + str.tostring(yesterday0500, format.mintick) + ")", xloc=xloc.bar_time, style=label.style_none, textcolor=yesterdayFibLevelsColor, size=size.normal)
                 yesterday0618Label := label.new(x=xLabel, y=yesterday0618, text="YESTERDAY 0.618 (" + str.tostring(yesterday0618, format.mintick) + ")", xloc=xloc.bar_time, style=label.style_none, textcolor=yesterdayFibLevelsColor, size=size.normal)
                 yesterday1618Label := label.new(x=xLabel, y=yesterday1618, text="YESTERDAY 1.618 (" + str.tostring(yesterday1618, format.mintick) + ")", xloc=xloc.bar_time, style=label.style_none, textcolor=yesterdayFibLevelsColor, size=size.normal)
 
             // Draw Golden Zone
             if yesterdayBias == "Long"
-                yesterdayGZ := box.new(left=startOfYesterday, right=x2Time, top=yesterday0618, bottom=yesterday05, border_color=yesterdayFibLevelsColor, bgcolor=color.new(yesterdayFibLevelsColor, 75), xloc=xloc.bar_time, text=showLabels ? "🤑 YESTERDAY GZ" : "", text_size=size.large, text_color=yesterdayFibLevelsColor, text_formatting = text.format_bold)
+                yesterdayGZ := box.new(left=startOfYesterday, right=x2Time, top=yesterday0618, bottom=yesterday0500, border_color=yesterdayFibLevelsColor, bgcolor=color.new(yesterdayFibLevelsColor, 75), xloc=xloc.bar_time, text=showLabels ? "🤑 YESTERDAY GZ" : na, text_size=size.large, text_color=yesterdayFibLevelsColor, text_formatting = text.format_bold)
             else
-                yesterdayGZ := box.new(left=startOfYesterday, right=x2Time, top=yesterday05, bottom=yesterday0618, border_color=yesterdayFibLevelsColor, bgcolor=color.new(yesterdayFibLevelsColor, 75), xloc=xloc.bar_time, text=showLabels ? "🤑 YESTERDAY GZ" : "", text_size=size.large, text_color=yesterdayFibLevelsColor, text_formatting = text.format_bold)
+                yesterdayGZ := box.new(left=startOfYesterday, right=x2Time, top=yesterday0500, bottom=yesterday0618, border_color=yesterdayFibLevelsColor, bgcolor=color.new(yesterdayFibLevelsColor, 75), xloc=xloc.bar_time, text=showLabels ? "🤑 YESTERDAY GZ" : na, text_size=size.large, text_color=yesterdayFibLevelsColor, text_formatting = text.format_bold)
 
-
-
+ 
 
 /////////////////////////////////////////////////////////////////////
 // VARIABLES
@@ -348,4 +347,11 @@ drawLastWeekFibLevels(lastWeekBias)
 // Yesterday
 drawYesterdayHighLow()
 drawYesterdayFibLevels(yesterdayBias)
+
+// Period Separators
+bool isNewPeriod = timeframe.change("1D")
+color periodColor = dayofweek == dayofweek.monday ? color.new(color.white, 75) : color.new(color.white, 90)
+
+// Highlights the background when a new period begins. Only plots in timeframes below "Daily"
+bgcolor(isNewPeriod and not timeframe.isdaily ? periodColor : na)
 
