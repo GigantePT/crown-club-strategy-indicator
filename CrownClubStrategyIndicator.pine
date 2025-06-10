@@ -40,8 +40,8 @@ showLabels = input.bool(true, "Show Labels", "Show all labels", group=" Labels")
 // Draw Last Week's High and Low
 drawLastWeekHighLow() =>
     // Get the previous week's high and low using weekly timeframe
-    prevWeekHigh = request.security(syminfo.tickerid, "W", high[1], lookahead=barmerge.lookahead_on)
-    prevWeekLow  = request.security(syminfo.tickerid, "W", low[1], lookahead=barmerge.lookahead_on)
+    lastWeekHigh = request.security(syminfo.tickerid, "W", high[1], lookahead=barmerge.lookahead_on)
+    lastWeekLow  = request.security(syminfo.tickerid, "W", low[1], lookahead=barmerge.lookahead_on)
 
     // Get the time (in milliseconds) of the start of this week and the start of last week
     startOfThisWeek = time("W")  // milliseconds since epoch
@@ -73,16 +73,18 @@ drawLastWeekHighLow() =>
         label.delete(lowLabel)
 
         // Create new horizontal rays (extend to the right)
-        highLine := line.new(x1=startOfLastWeek, y1=prevWeekHigh, x2=x2Time, y2=prevWeekHigh, xloc=xloc.bar_time, extend=extend.none, color=lastWeekHighLowColor, width=2)
-        lowLine := line.new(x1=startOfLastWeek, y1=prevWeekLow, x2=x2Time, y2=prevWeekLow, xloc=xloc.bar_time, extend=extend.none, color=lastWeekHighLowColor, width=2)
+        highLine := line.new(x1=startOfLastWeek, y1=lastWeekHigh, x2=x2Time, y2=lastWeekHigh, xloc=xloc.bar_time, extend=extend.none, color=lastWeekHighLowColor, width=2)
+        lowLine := line.new(x1=startOfLastWeek, y1=lastWeekLow, x2=x2Time, y2=lastWeekLow, xloc=xloc.bar_time, extend=extend.none, color=lastWeekHighLowColor, width=2)
 
         // Add label x coordinate at the center of yesterday
-        xLabel = startOfThisWeek
+        xLabel = int(startOfThisWeek * 0.2) + int(timenow * 0.8)
 
         // Show labels (if enabled)
         if showLabels
-            highLabel := label.new(x=xLabel, y=prevWeekHigh, text="LAST WEEK HIGH (" + str.tostring(prevWeekHigh, format.mintick) + ")", xloc=xloc.bar_time, style=label.style_none, textcolor=lastWeekHighLowColor, size=size.normal)
-            lowLabel := label.new(x=xLabel, y=prevWeekLow, text="LAST WEEK LOW (" + str.tostring(prevWeekLow, format.mintick) + ")", xloc=xloc.bar_time, style=label.style_none, textcolor=lastWeekHighLowColor, size=size.normal)
+            highLabel := label.new(x=xLabel, y=lastWeekHigh, text="LAST WEEK HIGH (" + str.tostring(lastWeekHigh, format.mintick) + ")", xloc=xloc.bar_time, style=label.style_none, textcolor=lastWeekHighLowColor, size=size.normal)
+            lowLabel := label.new(x=xLabel, y=lastWeekLow, text="LAST WEEK LOW (" + str.tostring(lastWeekLow, format.mintick) + ")", xloc=xloc.bar_time, style=label.style_none, textcolor=lastWeekHighLowColor, size=size.normal)
+
+    [lastWeekHigh, lastWeekLow]
 
 
 // Set the Last Week bias variable
@@ -96,8 +98,8 @@ setLastWeekBias() =>
 // Draw Last Week's Fibonacci levels and Golden Zone based on its bias
 drawLastWeekFibLevels(lastWeekBias) =>
     // Get the previous week's high and low using weekly timeframe
-    prevWeekHigh = request.security(syminfo.tickerid, "W", high[1], lookahead=barmerge.lookahead_on)
-    prevWeekLow  = request.security(syminfo.tickerid, "W", low[1], lookahead=barmerge.lookahead_on)
+    lastWeekHigh = request.security(syminfo.tickerid, "W", high[1], lookahead=barmerge.lookahead_on)
+    lastWeekLow  = request.security(syminfo.tickerid, "W", low[1], lookahead=barmerge.lookahead_on)
 
     // Get the time (in milliseconds) of the start of this week and the start of last week
     startOfThisWeek = time("W")  // milliseconds since epoch
@@ -106,7 +108,7 @@ drawLastWeekFibLevels(lastWeekBias) =>
     x2Time = startOfThisWeek + 5 * 24 * 60 * 60 * 1000  // extend 5 days to future
 
     // Difference between Last Week's High and Low price
-    deltaHighLow = prevWeekHigh - prevWeekLow
+    deltaHighLow = lastWeekHigh - lastWeekLow
 
     // FibLevels
     float lastWeek0500 = na
@@ -115,13 +117,13 @@ drawLastWeekFibLevels(lastWeekBias) =>
 
     // Set the Fib Levels based on the bias
     if lastWeekBias == "Long"
-        lastWeek0500 := prevWeekLow + (deltaHighLow * 0.5)
-        lastWeek0618 := prevWeekLow + (deltaHighLow * 0.618)
-        lastWeek1618 := prevWeekLow + (deltaHighLow * 1.618)
+        lastWeek0500 := lastWeekLow + (deltaHighLow * 0.5)
+        lastWeek0618 := lastWeekLow + (deltaHighLow * 0.618)
+        lastWeek1618 := lastWeekLow + (deltaHighLow * 1.618)
     else
-        lastWeek0500 := prevWeekHigh - (deltaHighLow * 0.5)
-        lastWeek0618 := prevWeekHigh - (deltaHighLow * 0.618)
-        lastWeek1618 := prevWeekHigh - (deltaHighLow * 1.618)
+        lastWeek0500 := lastWeekHigh - (deltaHighLow * 0.5)
+        lastWeek0618 := lastWeekHigh - (deltaHighLow * 0.618)
+        lastWeek1618 := lastWeekHigh - (deltaHighLow * 1.618)
 
     // Only draw on first bar of the current week (to avoid multiple lines)
     isFirstBarOfWeek = ta.change(startOfThisWeek) != 0
@@ -158,7 +160,7 @@ drawLastWeekFibLevels(lastWeekBias) =>
         lastWeek1618Line := line.new(x1=startOfLastWeek, y1=lastWeek1618, x2=x2Time, y2=lastWeek1618, xloc=xloc.bar_time, extend=extend.none, color=lastWeekFibLevelsColor, width=2)
 
         // Add label x coordinate at the center of yesterday
-        xLabel = startOfThisWeek
+        xLabel = int(startOfThisWeek * 0.2) + int(timenow * 0.8)
         
         // Show labels (if enabled)
         if showLabels
@@ -181,11 +183,9 @@ drawYesterdayHighLow() =>
     yesterdayLow  = request.security(syminfo.tickerid, "D", low[1], lookahead=barmerge.lookahead_on)
 
     // Get the time (in milliseconds) of the start of today and the start of yesterday
-    startOfToday = time("D")  // milliseconds since epoch
-    startOfYesterday = startOfToday - 1 * 24 * 60 * 60 * 1000  // subtract 1 day
-
-    //startOfToday = timestamp("UTC", year, month, dayofmonth)      DELETE
-    //startOfYesterday = startOfToday - 86400000                    DELETE
+    startOfToday = time("D")    // milliseconds since epoch
+    startOfYesterday = startOfToday - 1 * 24 * 60 * 60 * 1000   // subtract 1 day
+    startOfTomorrow = startOfToday + 1 * 24 * 60 * 60 * 1000    // add 1 day
 
     x2Time = startOfToday + (7 - dayofweek) * 24 * 60 * 60 * 1000  // extend until the end of the week
 
@@ -219,13 +219,16 @@ drawYesterdayHighLow() =>
             lowLine := line.new(x1=startOfYesterday, y1=yesterdayLow, x2=x2Time, y2=yesterdayLow, xloc=xloc.bar_time, extend=extend.none, color=yesterdayHighLowColor, width=2)
 
             // Add label x coordinate at the center of yesterday
-            xLabel = (startOfYesterday + startOfToday) / 2
+            xLabel = (startOfToday + startOfTomorrow) / 2
 
             // Show labels (if enabled)
             if showLabels
                 highLabel := label.new(x=xLabel, y=yesterdayHigh, text="YESTERDAY HIGH (" + str.tostring(yesterdayHigh, format.mintick) + ")", xloc=xloc.bar_time, style=label.style_none, textcolor=yesterdayHighLowColor, size=size.normal)
                 lowLabel := label.new(x=xLabel, y=yesterdayLow, text="YESTERDAY LOW (" + str.tostring(yesterdayLow, format.mintick) + ")", xloc=xloc.bar_time, style=label.style_none, textcolor=yesterdayHighLowColor, size=size.normal)
 
+            [yesterdayHigh, yesterdayLow]
+        else
+            [na, na]
 
 
 // Set the Yesterday bias variable
@@ -244,11 +247,9 @@ drawYesterdayFibLevels(yesterdayBias) =>
     yesterdayLow  = request.security(syminfo.tickerid, "D", low[1], lookahead=barmerge.lookahead_on)
 
     // Get the time (in milliseconds) of the start of today and the start of yesterday
-    startOfToday = time("D")  // milliseconds since epoch
-    startOfYesterday = startOfToday - 1 * 24 * 60 * 60 * 1000  // subtract 1 day
-
-    //startOfToday = timestamp("UTC", year, month, dayofmonth)      DELETE
-    //startOfYesterday = startOfToday - 86400000                    DELETE
+    startOfToday = time("D")    // milliseconds since epoch
+    startOfYesterday = startOfToday - 1 * 24 * 60 * 60 * 1000   // subtract 1 day
+    startOfTomorrow = startOfToday + 1 * 24 * 60 * 60 * 1000    // add 1 day
 
     x2Time = startOfToday + (7 - dayofweek) * 24 * 60 * 60 * 1000  // extend until the end of the week
 
@@ -307,7 +308,7 @@ drawYesterdayFibLevels(yesterdayBias) =>
             yesterday1618Line := line.new(x1=startOfYesterday, y1=yesterday1618, x2=x2Time, y2=yesterday1618, xloc=xloc.bar_time, extend=extend.none, color=yesterdayFibLevelsColor, width=2)
 
             // Add label x coordinate at the center of yesterday
-            xLabel = (startOfYesterday + startOfToday) / 2
+            xLabel = (startOfToday + startOfTomorrow) / 2
 
             // Show labels (if enabled)
             if showLabels
@@ -337,20 +338,24 @@ string yesterdayBias = setYesterdayBias()
 // SMAs
 sma1Line = ta.sma(close, sma1Length)
 sma2Line = ta.sma(close, sma2Length)
-plot(sma1Line, title="SMA 1", color=sma1Color, linewidth=2, display=display.all - display.status_line)
-plot(sma2Line, title="SMA 2", color=sma2Color, linewidth=2, display=display.all - display.status_line)
+plot(sma1Line, title="SMA 1", color=sma1Color, linewidth=2, display=display.all - display.status_line - display.price_scale)
+plot(sma2Line, title="SMA 2", color=sma2Color, linewidth=2, display=display.all - display.status_line - display.price_scale)
 
 // Last Week
-drawLastWeekHighLow()
+[lastWeekHigh, lastWeekLow] = drawLastWeekHighLow()
+plot(lastWeekHigh, title="Last Week High Price", color=lastWeekHighLowColor, display = display.price_scale)
+plot(lastWeekLow, title="Last Week Low Price", color=lastWeekHighLowColor, display = display.price_scale)
 drawLastWeekFibLevels(lastWeekBias)
 
 // Yesterday
-drawYesterdayHighLow()
+[yesterdayHigh, yesterdayLow] = drawYesterdayHighLow()
+plot(yesterdayHigh, title="Yesterday High Price", color=yesterdayHighLowColor, display = display.price_scale)
+plot(yesterdayLow, title="Yesterday Low Price", color=yesterdayHighLowColor, display = display.price_scale)
 drawYesterdayFibLevels(yesterdayBias)
 
 // Period Separators
 bool isNewPeriod = timeframe.change("1D")
-color periodColor = dayofweek == dayofweek.monday ? color.new(color.white, 75) : color.new(color.white, 90)
+color periodColor = dayofweek == dayofweek.monday ? color.new(color.gray, 30) : color.new(color.gray, 70)
 
 // Highlights the background when a new period begins. Only plots in timeframes below "Daily"
 bgcolor(isNewPeriod and not timeframe.isdaily ? periodColor : na)
